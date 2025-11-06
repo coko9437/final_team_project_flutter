@@ -16,20 +16,22 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # 카메라 및 이미지
-  camera: ^0.10.0
+  camera: ^0.11.0
   image_picker: ^1.0.0
 
   # AI 모델
-  tflite_flutter: ^0.10.0
+  tflite_flutter: ^0.12.0
 
   # 구글맵 관련 (추가)
   google_maps_flutter: ^2.5.0
 
   # 위치 정보 (추가)
-  geolocator: ^10.1.0
+  geolocator: ^13.0.0
 
   # HTTP 통신 (추가)
-  http: ^1.1.0
+  http: ^1.1.0 
+  # 비디오 재생
+  video_player: ^2.8.0
 
 dev_dependencies:
   flutter_test:
@@ -40,3 +42,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/videos/video.mp4

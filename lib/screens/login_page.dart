@@ -28,13 +28,15 @@ class _LoginScreenState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // 배경색 명시
       appBar: AppBar(title: const Text('로그인 (임시)')), // AppBar가 있다면
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
               // 1. "반가워요" 텍스트를 "음바페"로 변경
               const Text(
                 '음밥해', // <-- 이 부분을 수정했습니다.
@@ -53,6 +55,22 @@ class _LoginScreenState extends State<LoginPage> {
                 width: 240, // 이미지 크기는 필요에 따라 조절하세요
                 height: 180,
                 fit: BoxFit.cover, // 이미지 비율 유지
+                errorBuilder: (context, error, stackTrace) {
+                  // 이미지 로드 실패 시 대체 UI
+                  return Container(
+                    width: 240,
+                    height: 180,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.image,
+                      size: 64,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 40),
 
@@ -148,11 +166,18 @@ class _LoginScreenState extends State<LoginPage> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.orange[300]),
                 onPressed: () {
-                  // HomePage는 onCapture 콜백이 필요하므로 임시 함수를 전달
+                  // HomePage는 onCapture 콜백이 필요하므로 CapturePage로 이동하는 함수 전달
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => HomePage(onCapture: () {
-                      print("HomePage에서 카메라 버튼 눌림 (임시)");
+                      // 카메라 버튼을 누르면 CapturePage로 이동
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => CapturePage(onFoodDetected: (food) {
+                          print("CapturePage에서 음식 인식됨: $food");
+                          Navigator.pop(context); // CapturePage 닫기
+                        })),
+                      );
                     })),
                   );
                 },
@@ -200,7 +225,8 @@ class _LoginScreenState extends State<LoginPage> {
                 },
                 child: const Text('결과 (ResultPage) 가기'),
               ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
