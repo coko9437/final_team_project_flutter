@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import './home_page.dart'; // './'는 같은 screens 폴더라는 의미
 import './capture_page.dart';
-import './result_page.dart';
 import '../widgets/bottom_nav.dart'; // '../'는 상위 폴더(lib)로 나간다는 의미
 
 class MainScreen extends StatefulWidget {
@@ -14,7 +13,6 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-  Map<String, dynamic>? _detectedFood;
 
   void _navigateToCapture() {
     Navigator.push(
@@ -22,23 +20,9 @@ class _MainScreenState extends State<MainScreen> {
       MaterialPageRoute(
         builder: (context) => CapturePage(
           onFoodDetected: (food) {
-            setState(() {
-              _detectedFood = food;
-            });
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ResultPage(
-                  food: food,
-                  onBack: () {
-                    Navigator.pop(context);
-                    setState(() {
-                      _currentIndex = 0;
-                    });
-                  },
-                ),
-              ),
-            );
+            // CapturePage에서 ResultPage로 직접 이동하므로, 여기서는 아무것도 하지 않음
+            // 이 콜백은 MainScreen에 분석 완료를 알리는 용도로만 사용됨
+            print('✅ MainScreen: 분석 완료 (네비게이션은 CapturePage에서 수행)');
           },
         ),
       ),
