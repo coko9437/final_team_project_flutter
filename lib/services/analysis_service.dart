@@ -30,7 +30,8 @@ class AnalysisService {
       // Windows IP 주소 확인: ipconfig
       // Linux IP 주소 확인: hostname -I
       // 아래 IP 주소를 본인의 서버 IP 주소로 변경하세요!
-      url = 'http://10.100.201.131:8080/api/analysis'; // 서버 IP 주소 (개인별로 변경 필요)
+      // 현재 확인된 IP: 192.168.50.80
+      url = 'http://192.168.50.80:8080/api/analysis'; // 서버 IP 주소 (개인별로 변경 필요)
       
       // localhost로 시도하려면 아래 주석 해제하고 위 줄 주석 처리
       // url = 'http://localhost:8080/api/analysis';
@@ -133,7 +134,23 @@ class AnalysisService {
       }
       print('✅ 파라미터 추가 완료');
 
-      // 요청 전송 (타임아웃 설정)
+      // 요청 전송 전 서버 연결 테스트 (선택적)
+      print('⏳ 서버 연결 테스트 중...');
+      try {
+        final testUrl = url.replaceAll('/api/analysis', '');
+        final testResponse = await http.get(Uri.parse(testUrl)).timeout(
+          const Duration(seconds: 5),
+          onTimeout: () {
+            throw AnalysisException('서버 연결 실패.\n\n확인 사항:\n1. 백엔드 서버가 실행 중인지 확인\n2. 서버 IP 주소가 올바른지 확인 (현재: $testUrl)\n3. 방화벽 설정 확인');
+          },
+        );
+        print('✅ 서버 연결 확인 완료 (상태 코드: ${testResponse.statusCode})');
+      } catch (e) {
+        print('⚠️ 서버 연결 테스트 실패 (계속 진행): $e');
+        // 연결 테스트 실패해도 실제 요청은 시도
+      }
+
+      // 요청 전송 (타임아웃 설정 - 이미지 분석은 시간이 오래 걸릴 수 있으므로 60초로 증가)
       print('⏳ 서버에 요청 전송 중...');
       print('   요청 URL: $url');
       print('   요청 필드 개수: ${request.fields.length}');
@@ -144,21 +161,28 @@ class AnalysisService {
       try {
         print('📡 request.send() 호출 시작...');
         var streamedResponse = await request.send().timeout(
-          const Duration(seconds: 30),
+          const Duration(seconds: 60), // 30초에서 60초로 증가 (Flask AI 분석 시간 고려)
           onTimeout: () {
-            print('❌ 타임아웃 발생! (30초)');
-            throw AnalysisException('서버 연결 시간 초과 (30초).\n서버가 실행 중인지 확인해주세요.');
+            print('❌ 타임아웃 발생! (60초)');
+            throw AnalysisException('서버 응답 시간 초과 (60초).\n\n가능한 원인:\n1. 서버가 실행 중이지 않음\n2. Flask AI 서버 연결 문제\n3. 네트워크 연결 문제\n\n서버 IP 주소: ${url.replaceAll('/api/analysis', '')}');
           },
         );
         print('✅ 스트림 응답 수신 완료');
         print('📥 Response.fromStream() 호출 시작...');
-        response = await http.Response.fromStream(streamedResponse);
+        response = await http.Response.fromStream(streamedResponse).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () {
+            throw AnalysisException('응답 스트림 읽기 시간 초과');
+          },
+        );
         print('✅ HTTP 응답 객체 생성 완료');
       } catch (e) {
         print('❌❌❌ 요청 전송 중 에러 발생 ❌❌❌');
         print('에러 타입: ${e.runtimeType}');
         print('에러 메시지: $e');
-        print('에러 스택: ${StackTrace.current}');
+        if (e is SocketException) {
+          throw AnalysisException('서버에 연결할 수 없습니다.\n\n확인 사항:\n1. 백엔드 서버가 실행 중인지 확인\n2. 서버 IP 주소가 올바른지 확인 (현재: ${url.replaceAll('/api/analysis', '')})\n3. 방화벽 설정 확인\n4. 같은 네트워크에 연결되어 있는지 확인');
+        }
         rethrow;
       }
 
@@ -241,7 +265,8 @@ class AnalysisService {
     } else if (Platform.isIOS) {
       // ⚠️ 개인 IP 주소 변경 필요 ⚠️
       // 아래 IP 주소를 본인의 서버 IP 주소로 변경하세요!
-      baseUrl = 'http://10.100.201.131:8080'; // 서버 IP 주소 (개인별로 변경 필요)
+      // 현재 확인된 IP: 192.168.50.80
+      baseUrl = 'http://192.168.50.80:8080'; // 서버 IP 주소 (개인별로 변경 필요)
     } else {
       baseUrl = 'http://localhost:8080';
     }
@@ -301,7 +326,8 @@ class AnalysisService {
     } else if (Platform.isIOS) {
       // ⚠️ 개인 IP 주소 변경 필요 ⚠️
       // 아래 IP 주소를 본인의 서버 IP 주소로 변경하세요!
-      baseUrl = 'http://10.100.201.131:8080'; // 서버 IP 주소 (개인별로 변경 필요)
+      // 현재 확인된 IP: 192.168.50.80
+      baseUrl = 'http://192.168.50.80:8080'; // 서버 IP 주소 (개인별로 변경 필요)
     } else {
       baseUrl = 'http://localhost:8080';
     }
@@ -369,11 +395,65 @@ class AnalysisService {
     } else if (Platform.isIOS) {
       // ⚠️ 개인 IP 주소 변경 필요 ⚠️
       // 아래 IP 주소를 본인의 서버 IP 주소로 변경하세요!
-      baseUrl = 'http://10.100.201.131:8080'; // 서버 IP 주소 (개인별로 변경 필요)
+      // 현재 확인된 IP: 192.168.50.80
+      baseUrl = 'http://192.168.50.80:8080'; // 서버 IP 주소 (개인별로 변경 필요)
     } else {
       baseUrl = 'http://localhost:8080';
     }
     return '$baseUrl/api/analysis/thumbnail/$historyId';
+  }
+
+  /// YouTube 레시피 클릭 시 저장
+  Future<void> saveClickedYouTubeRecipe({
+    required int userId,
+    required String historyId,
+    required String title,
+    required String url,
+  }) async {
+    // 플랫폼별 서버 URL 설정
+    String baseUrl;
+    if (kIsWeb) {
+      baseUrl = 'http://localhost:8080';
+    } else if (Platform.isAndroid) {
+      baseUrl = 'http://10.0.2.2:8080';
+    } else if (Platform.isIOS) {
+      // ⚠️ 개인 IP 주소 변경 필요 ⚠️
+      // 아래 IP 주소를 본인의 서버 IP 주소로 변경하세요!
+      // 현재 확인된 IP: 192.168.50.80
+      baseUrl = 'http://192.168.50.80:8080'; // 서버 IP 주소 (개인별로 변경 필요)
+    } else {
+      baseUrl = 'http://localhost:8080';
+    }
+
+    final uri = Uri.parse('$baseUrl/api/analysis/youtube-recipe/click').replace(
+      queryParameters: {
+        'userId': userId.toString(),
+        'historyId': historyId,
+        'title': title,
+        'url': url,
+      },
+    );
+
+    try {
+      final response = await http.post(uri).timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          throw AnalysisException('YouTube 레시피 저장 요청 시간 초과');
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 성공적으로 저장됨
+        return;
+      } else {
+        throw AnalysisException('YouTube 레시피 저장 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      if (e is AnalysisException) {
+        rethrow;
+      }
+      throw AnalysisException('YouTube 레시피 저장 중 오류 발생: ${e.toString()}');
+    }
   }
 }
 
@@ -385,6 +465,7 @@ class AnalysisResult {
   final List<YoutubeRecipe> youtubeRecipes;
   final String? message;
   final List<dynamic>? top3; // 상위 3개 예측 결과
+  final String? historyId; // 분석 이력 ID (YouTube 레시피 클릭 시 저장에 사용)
 
   AnalysisResult({
     this.foodName,
@@ -393,6 +474,7 @@ class AnalysisResult {
     required this.youtubeRecipes,
     this.message,
     this.top3,
+    this.historyId,
   });
 
   factory AnalysisResult.fromJson(Map<String, dynamic> json) {
@@ -415,6 +497,7 @@ class AnalysisResult {
       top3: json['top3'] != null
           ? (json['top3'] as List)
           : null,
+      historyId: json['historyId'] as String?,
     );
   }
 
@@ -429,6 +512,7 @@ class AnalysisResult {
       'nutrition': nutritionData?.toMap() ?? {},
       'youtubeRecipes': youtubeRecipes.map((r) => r.toMap()).toList(),
       'top3': top3, // 상위 3개 예측 결과 추가
+      'historyId': historyId, // 분석 이력 ID 추가
     };
   }
 }
