@@ -24,7 +24,7 @@
         <!-- Google Cloud Console에서 발급받은 API 키를 입력하세요 -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDPBD-U5SjxZdodYkusCGuW9S2RuV4dApo"/>
+            android:value="AIzaSyBh8233jiBHLw9mjtOA9Y5KhM0sLqKqLg0"/>
 
         <activity
             android:name=".MainActivity"
