@@ -105,7 +105,6 @@ class AnalysisService {
         'image',
         fileBytes,
         filename: imageFile.path.split('/').last,
-        contentType: MediaType.parse(mimeType),
       );
       print('✅ MultipartFile 생성 완료');
       
@@ -285,13 +284,14 @@ class AnalysisService {
   }
 
   /// 분석 히스토리 조회
+  /// JWT 토큰에서 자동으로 사용자 ID를 추출합니다.
   Future<List<dynamic>> getAnalysisHistory({
     required int userId,
     int page = 0,
     int size = 10,
   }) async {
-    // 공통 설정에서 base URL 사용
-    final baseUrl = ApiConfig.baseUrl;
+    // 일반 API용 base URL 사용 (로컬 서버)
+    final baseUrl = ApiConfig.apiBaseUrl;
     final url = Uri.parse('$baseUrl/api/analysis/history').replace(
       queryParameters: {
         'userId': userId.toString(),
@@ -301,7 +301,9 @@ class AnalysisService {
     );
 
     try {
-      final response = await http.get(url).timeout(
+      // JWT 토큰을 헤더에 포함
+      final headers = await _getAuthHeaders();
+      final response = await http.get(url, headers: headers).timeout(
         const Duration(seconds: 30),
         onTimeout: () {
           throw AnalysisException('분석 히스토리 조회 요청 시간 초과');
@@ -358,8 +360,8 @@ class AnalysisService {
     required String title,
     required String url,
   }) async {
-    // 공통 설정에서 base URL 사용
-    final baseUrl = ApiConfig.baseUrl;
+    // 일반 API용 base URL 사용 (로컬 서버)
+    final baseUrl = ApiConfig.apiBaseUrl;
     final uri = Uri.parse('$baseUrl/api/analysis/youtube-recipe/click').replace(
       queryParameters: {
         'userId': userId.toString(),
@@ -370,7 +372,9 @@ class AnalysisService {
     );
 
     try {
-      final response = await http.post(uri).timeout(
+      // JWT 토큰을 헤더에 포함
+      final headers = await _getAuthHeaders();
+      final response = await http.post(uri, headers: headers).timeout(
         const Duration(seconds: 10),
         onTimeout: () {
           throw AnalysisException('YouTube 레시피 저장 요청 시간 초과');
