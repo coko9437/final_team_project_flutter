@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 // [핵심] 로그인 페이지와 회원가입 페이지를 import 합니다.
 // (이 파일들을 lib/screens/ 폴더로 옮기는 것을 추천합니다!)
 import 'screens/login_page.dart';
+import 'screens/signup_page.dart';
 
 
 // import 'screens/signup_page.dart'; // 필요시
@@ -13,13 +14,13 @@ void main() {
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-  
+
   // 에러 핸들링 추가
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
     print('Flutter 에러: ${details.exception}');
   };
-  
+
   runApp(const MyApp());
 }
 
@@ -44,7 +45,10 @@ class MyApp extends StatelessWidget {
         // 추가하면 로그인/회원가입 페이지에도 바로 적용됩니다!
       ),
       // [핵심] 앱의 첫 화면을 MainScreen이 아닌 LoginPage로 변경합니다.
-      home: const LoginPage(),
+      home: LoginPage(),
+      routes: {
+        '/signup': (_) => const SignupPage(), // ✅ 회원가입 라우트
+      },
     );
   }
 }

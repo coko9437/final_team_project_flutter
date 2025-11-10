@@ -265,63 +265,62 @@ class _CapturePageState extends State<CapturePage>
       body: Stack(
         children: [
           SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(30),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: _imageFile != null
-                              ? Image.file(
-                                  _imageFile!,
-                                  width: double.infinity,
-                                  height: 200,
-                                  fit: BoxFit.cover,
-                                )
-                              : _videoController != null && _videoController!.value.isInitialized
-                                  ? AspectRatio(
-                                      aspectRatio: _videoController!.value.aspectRatio,
-                                      child: VideoPlayer(_videoController!),
-                                    )
-                                  : Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF1a4d4d),
-                              Color(0xFF0d2626),
-                            ],
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(30),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      height: MediaQuery.of(context).size.height * 0.4, // 화면 높이의 40%
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: _imageFile != null
+                            ? Image.file(
+                                _imageFile!,
+                                width: double.infinity,
+                                height: MediaQuery.of(context).size.height * 0.4, // 화면 높이의 40%
+                                fit: BoxFit.cover,
+                              )
+                            : _videoController != null && _videoController!.value.isInitialized
+                                ? AspectRatio(
+                                    aspectRatio: _videoController!.value.aspectRatio,
+                                    child: VideoPlayer(_videoController!),
+                                  )
+                                : Container(
+                                      height: MediaQuery.of(context).size.height * 0.4, // 화면 높이의 40%
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Color(0xFF1a4d4d),
+                                            Color(0xFF0d2626),
+                                          ],
+                                        ),
                                       ),
                                       child: const Center(
                                         child: CircularProgressIndicator(
@@ -329,94 +328,94 @@ class _CapturePageState extends State<CapturePage>
                                         ),
                                       ),
                                     ),
+                      ),
+                    ),
+                    // 이미지 미리보기 모드
+                    if (_showImagePreview && _imageFile != null) ...[
+                      const SizedBox(height: 24),
+                      const Text(
+                        '사진을 확인해주세요',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
                         ),
                       ),
-                      // 이미지 미리보기 모드
-                      if (_showImagePreview && _imageFile != null) ...[
-                        const SizedBox(height: 24),
-                        const Text(
-                          '사진을 확인해주세요',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '이미지가 올바르게 선택되었나요?',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '이미지가 올바르게 선택되었나요?',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                      ] else ...[
-                        const SizedBox(height: 32),
-                      ],
-                      // 버튼 영역
-                      if (_showImagePreview && _imageFile != null) ...[
-                        // 이미지 미리보기 모드: 확인 및 다시 촬영 버튼
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _retakeImage,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey[200],
-                                  foregroundColor: Colors.black87,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(30),
+                      ),
+                      const SizedBox(height: 32),
+                    ] else ...[
+                      const SizedBox(height: 32),
+                    ],
+                    // 버튼 영역
+                    if (_showImagePreview && _imageFile != null) ...[
+                      // 이미지 미리보기 모드: 확인 및 다시 촬영 버튼
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: _retakeImage,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.grey[200],
+                                foregroundColor: Colors.black87,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              child: const Text(
+                                '다시 촬영',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF667eea),
+                                    Color(0xFF764ba2),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              child: ElevatedButton(
+                                onPressed: _confirmAndAnalyze,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                ),
                                 child: const Text(
-                                  '다시 촬영',
+                                  '확인',
                                   style: TextStyle(
                                     fontSize: 16,
+                                    color: Colors.white,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                        colors: [
-                                      Color(0xFF667eea),
-                                      Color(0xFF764ba2),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                child: ElevatedButton(
-                                  onPressed: _confirmAndAnalyze,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.transparent,
-                                    shadowColor: Colors.transparent,
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    '확인',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ] else ...[
-                        // 일반 모드: 사진 촬영 및 갤러리 버튼
+                          ),
+                        ],
+                      ),
+                    ] else ...[
+                      // 일반 모드: 사진 촬영 및 갤러리 버튼
                       Container(
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -429,7 +428,7 @@ class _CapturePageState extends State<CapturePage>
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: ElevatedButton(
-                            onPressed: _isProcessing ? null : _takePicture,
+                          onPressed: _isProcessing ? null : _takePicture,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
@@ -452,7 +451,7 @@ class _CapturePageState extends State<CapturePage>
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
-                            onPressed: _isProcessing ? null : _pickFromGallery,
+                          onPressed: _isProcessing ? null : _pickFromGallery,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey[200],
                             foregroundColor: Colors.black87,
@@ -471,9 +470,8 @@ class _CapturePageState extends State<CapturePage>
                           ),
                         ),
                       ),
-                      ],
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
