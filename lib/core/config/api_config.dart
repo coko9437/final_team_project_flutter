@@ -20,18 +20,12 @@ class ApiConfig {
   // Mac IP 확인: ifconfig | grep "inet " | grep -v 127.0.0.1
   // Windows IP 확인: ipconfig
   // Linux IP 확인: hostname -I
-  // 현재 확인된 IP: 10.100.201.131
-  static const String _serverIp = '10.100.201.6'; // 본인의 서버 IP 주소로 변경!
+  // 현재 확인된 IP: 10.100.201.26 (Android 실제 기기용)
+  static const String _serverIp = '10.100.201.26'; // 본인의 서버 IP 주소로 변경!
   static const int _serverPort = 8080;
   
-  /// 플랫폼별로 자동으로 올바른 base URL 반환
-  static String get baseUrl {
-    // ngrok URL이 설정되어 있으면 모든 플랫폼에서 ngrok 사용
-    if (_ngrokUrl.isNotEmpty) {
-      return _ngrokUrl;
-    }
-    
-    // ngrok 미사용 시: 플랫폼별로 자동 선택
+  /// 플랫폼별 로컬 서버 URL 반환 (일반 API용)
+  static String _getLocalServerUrl() {
     // 웹 환경
     if (kIsWeb) {
       return 'http://localhost:$_serverPort';
@@ -55,10 +49,31 @@ class ApiConfig {
     }
   }
   
-  /// ngrok 사용 여부 확인
+  /// 인증 API용 base URL (OAuth2 로그인용 - NGROK 우선, 없으면 로컬)
+  /// 로그인, 회원가입, OAuth2 소셜 로그인에 사용
+  static String get authBaseUrl {
+    // NGROK URL이 설정되어 있으면 NGROK 사용
+    if (_ngrokUrl.isNotEmpty) {
+      return _ngrokUrl;
+    }
+    // NGROK이 없으면 로컬 서버로 폴백
+    return _getLocalServerUrl();
+  }
+
+  /// 일반 API용 base URL (로컬 서버만 사용)
+  /// 지도, 분석, 마이페이지 등 일반 기능에 사용
+  static String get apiBaseUrl {
+    return _getLocalServerUrl();
+  }
+
+  /// 하위 호환성을 위한 baseUrl (일반 API용으로 사용)
+  /// @deprecated: apiBaseUrl 사용 권장
+  static String get baseUrl => apiBaseUrl;
+
+  /// NGROK 사용 여부 확인
   static bool get isUsingNgrok => _ngrokUrl.isNotEmpty;
   
-  /// ngrok 헤더 (무료 버전 브라우저 경고 페이지 우회)
+  /// NGROK 헤더 (무료 버전 브라우저 경고 페이지 우회)
   static Map<String, String>? get ngrokHeaders {
     if (isUsingNgrok) {
       return {'ngrok-skip-browser-warning': 'true'};
@@ -66,16 +81,24 @@ class ApiConfig {
     return null;
   }
   
-  /// API 엔드포인트 전체 URL 생성
+  /// 인증 API 엔드포인트 전체 URL 생성
+  static String getAuthApiUrl(String endpoint) {
+    final path = endpoint.startsWith('/') ? endpoint : '/$endpoint';
+    return '$authBaseUrl$path';
+  }
+
+  /// 일반 API 엔드포인트 전체 URL 생성
   static String getApiUrl(String endpoint) {
     // endpoint가 이미 /로 시작하면 그대로, 아니면 / 추가
     final path = endpoint.startsWith('/') ? endpoint : '/$endpoint';
-    return '$baseUrl$path';
+    return '$apiBaseUrl$path';
   }
   
   /// 디버그용: 현재 사용 중인 URL 출력
   static void printCurrentUrl() {
-    print('🔗 ApiConfig baseUrl: $baseUrl');
+    print('🔐 인증 API URL (authBaseUrl): $authBaseUrl');
+    print('🌐 일반 API URL (apiBaseUrl): $apiBaseUrl');
     print('📱 Platform: ${kIsWeb ? 'Web' : Platform.isIOS ? 'iOS' : Platform.isAndroid ? 'Android' : 'Other'}');
+    print('🔗 NGROK 사용: ${isUsingNgrok ? "예" : "아니오 (로컬 서버 사용)"}');
   }
 }
