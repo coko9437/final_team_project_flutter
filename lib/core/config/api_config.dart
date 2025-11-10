@@ -21,7 +21,7 @@ class ApiConfig {
   // Windows IP 확인: ipconfig
   // Linux IP 확인: hostname -I
   // 현재 확인된 IP: 10.100.201.131
-  static const String _serverIp = '10.100.201.131'; // 본인의 서버 IP 주소로 변경!
+  static const String _serverIp = '10.100.201.6'; // 본인의 서버 IP 주소로 변경!
   static const int _serverPort = 8080;
   
   /// 플랫폼별로 자동으로 올바른 base URL 반환
