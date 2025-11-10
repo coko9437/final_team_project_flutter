@@ -82,34 +82,130 @@ class _HomePageState extends State<HomePage>
     try {
       print('📷 카메라 촬영 시작...');
       
-      // 카메라 권한 확인 및 요청
-      final cameraStatus = await Permission.camera.status;
-      print('📷 현재 카메라 권한 상태: $cameraStatus');
-      
-      if (!cameraStatus.isGranted) {
-        print('📷 카메라 권한 요청 중...');
-        final requestResult = await Permission.camera.request();
-        print('📷 카메라 권한 요청 결과: $requestResult');
+      // 카메라 권한 확인 및 요청 (Android는 기존대로 유지, iOS만 타임아웃 추가)
+      try {
+        final cameraStatus = Platform.isIOS 
+            ? await Permission.camera.status.timeout(
+                const Duration(seconds: 2), 
+                onTimeout: () {
+                  print('⚠️ iOS 카메라 권한 확인 타임아웃 - 계속 진행');
+                  return PermissionStatus.denied;
+                })
+            : await Permission.camera.status; // Android는 기존대로
         
-        if (!requestResult.isGranted) {
+        print('📷 현재 카메라 권한 상태: $cameraStatus');
+        
+        // 영구 거부 상태인 경우 바로 설정으로 이동 (카메라 사용 시도 안 함)
+        if (cameraStatus.isPermanentlyDenied) {
+          print('📷 카메라 권한이 영구적으로 거부됨 - 설정으로 이동 필요');
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
-                duration: const Duration(seconds: 4),
-                backgroundColor: Colors.orange[700],
-                action: SnackBarAction(
-                  label: '설정 열기',
-                  textColor: Colors.white,
-                  onPressed: () async {
-                    await openAppSettings();
-                  },
+            // 더 명확한 안내 다이얼로그 표시
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('카메라 권한 필요'),
+                content: const Text(
+                  '카메라 권한이 영구적으로 거부되었습니다.\n\n'
+                  '카메라를 사용하려면:\n'
+                  '1. 아래 "설정 열기" 버튼을 누르세요\n'
+                  '2. 앱 설정 화면에서 카메라 권한을 허용하세요\n'
+                  '3. 앱으로 돌아와서 다시 시도하세요',
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('취소'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      Navigator.of(context).pop();
+                      await openAppSettings();
+                    },
+                    child: const Text('설정 열기'),
+                  ),
+                ],
               ),
             );
           }
-          return;
+          return; // 카메라 사용 시도하지 않고 종료
         }
+        
+        if (!cameraStatus.isGranted) {
+          print('📷 카메라 권한 요청 중...');
+          final requestResult = Platform.isIOS
+              ? await Permission.camera.request().timeout(
+                  const Duration(seconds: 5),
+                  onTimeout: () {
+                    print('⚠️ iOS 카메라 권한 요청 타임아웃 - 계속 진행');
+                    return PermissionStatus.denied;
+                  })
+              : await Permission.camera.request(); // Android는 기존대로
+          
+          print('📷 카메라 권한 요청 결과: $requestResult');
+          
+          if (!requestResult.isGranted) {
+            // 요청 후에도 거부된 경우
+            if (requestResult.isPermanentlyDenied) {
+              print('📷 카메라 권한이 영구적으로 거부됨 - 설정으로 이동 필요');
+              if (mounted) {
+                // 더 명확한 안내 다이얼로그 표시
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('카메라 권한 필요'),
+                    content: const Text(
+                      '카메라 권한이 영구적으로 거부되었습니다.\n\n'
+                      '카메라를 사용하려면:\n'
+                      '1. 아래 "설정 열기" 버튼을 누르세요\n'
+                      '2. 앱 설정 화면에서 카메라 권한을 허용하세요\n'
+                      '3. 앱으로 돌아와서 다시 시도하세요',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('취소'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(context).pop();
+                          await openAppSettings();
+                        },
+                        child: const Text('설정 열기'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            } else {
+              // 일반 거부
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text('카메라 권한이 필요합니다.\n설정에서 권한을 허용해주세요.'),
+                    duration: const Duration(seconds: 4),
+                    backgroundColor: Colors.orange[700],
+                    action: SnackBarAction(
+                      label: '설정 열기',
+                      textColor: Colors.white,
+                      onPressed: () async {
+                        await openAppSettings();
+                      },
+                    ),
+                  ),
+                );
+              }
+            }
+            return; // 카메라 사용 시도하지 않고 종료
+          }
+        }
+      } catch (e) {
+        // iOS 시뮬레이터에서만 에러 발생 가능, Android는 기존대로
+        if (Platform.isIOS) {
+          print('⚠️ iOS 카메라 권한 확인 중 에러 (계속 진행): $e');
+        } else {
+          print('⚠️ 카메라 권한 확인 중 에러: $e');
+        }
+        // 에러 발생해도 계속 진행 (시뮬레이터 등)
       }
       
       final XFile? image = await _picker.pickImage(

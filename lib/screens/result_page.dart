@@ -6,6 +6,7 @@ import 'restaurant_map_screen.dart'; // 지도 화면 import
 import 'main_screen.dart'; // MainScreen import
 import '../services/analysis_service.dart'; // YouTube 검색 서비스
 import '../util/auth_helper.dart';
+import '../widgets/bottom_nav.dart'; // BottomNav 위젯 import
 
 class ResultPage extends StatefulWidget {
   final Map<String, dynamic> food;
@@ -142,6 +143,19 @@ class _ResultPageState extends State<ResultPage> {
       behavior: HitTestBehavior.translucent,
       child: Scaffold(
       backgroundColor: Colors.white,
+      bottomNavigationBar: BottomNav(
+        currentIndex: -1, // ResultPage는 별도 페이지이므로 활성 탭 없음
+        onTap: (index) {
+          // MainScreen으로 이동하면서 선택한 탭으로 전환
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainScreen(initialIndex: index),
+            ),
+            (route) => false,
+          );
+        },
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

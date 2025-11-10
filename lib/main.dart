@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'screens/login_page.dart';
 import 'screens/signup_page.dart';
 import 'screens/main_screen.dart';
+import 'screens/splash_screen.dart';
 import 'util/auth_helper.dart';
 
 
@@ -48,8 +49,10 @@ class MyApp extends StatelessWidget {
         // (선택) 여기에 이전에 만들었던 '귀염뽀짝' 테마(버튼, 텍스트필드)를
         // 추가하면 로그인/회원가입 페이지에도 바로 적용됩니다!
       ),
-      // [핵심] 앱 시작 시 토큰 확인하여 자동 로그인
-      home: const AuthWrapper(),
+      // [핵심] 앱 시작 시 스플래시 화면 표시 후 토큰 확인하여 자동 로그인
+      home: const SplashScreen(
+        child: AuthWrapper(),
+      ),
       routes: {
         '/signup': (_) => const SignupPage(), // ✅ 회원가입 라우트
       },

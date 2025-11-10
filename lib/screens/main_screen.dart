@@ -2,22 +2,27 @@
 import 'package:flutter/material.dart';
 import './home_page.dart';
 import './my_page.dart' show MyPage, MyPageState; // 마이페이지 import
+import './nutrition_page.dart'; // 영양소 페이지 import
+import './restaurant_search_page.dart'; // 맛집 검색 페이지 import
 import '../widgets/bottom_nav.dart'; // '../'는 상위 폴더(lib)로 나간다는 의미
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int? initialIndex;
+  
+  const MainScreen({super.key, this.initialIndex});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
   final GlobalKey<MyPageState> _myPageKey = GlobalKey<MyPageState>();
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialIndex ?? 0;
     // MainScreen이 생성될 때 MyPage가 이미 생성되어 있다면 새로고침
     // 하지만 IndexedStack을 사용하므로 initState에서는 아직 생성되지 않았을 수 있음
     // 따라서 첫 프레임 후에 체크
@@ -44,8 +49,8 @@ class _MainScreenState extends State<MainScreen> {
             },
             onBack: null, // IndexedStack 내부에서는 뒤로가기 불필요 (탭 전환으로 처리)
           ),
-          const Center(child: Text('단식', style: TextStyle(fontSize: 24))),
-          const Center(child: Text('이력', style: TextStyle(fontSize: 24))),
+          const NutritionPage(), // 영양소 페이지 (인덱스 1)
+          const RestaurantSearchPage(), // 맛집 검색 페이지 (인덱스 2 - maps 탭)
           MyPage(key: _myPageKey), // 마이페이지 (인덱스 3) - GlobalKey로 새로고침 가능
         ],
       ),
