@@ -1,25 +1,24 @@
 // lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-// [핵심] 로그인 페이지와 회원가입 페이지를 import 합니다.
-// (이 파일들을 lib/screens/ 폴더로 옮기는 것을 추천합니다!)
-import 'screens/login_page.dart';
-import 'screens/signup_page.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+// UI 스크린 Import
+import 'ui/screens/auth/login_screen.dart';
+import 'ui/screens/auth/signup_screen.dart';
+import 'ui/screens/main_screen.dart';
+import 'ui/screens/splash_screen.dart'; // 로딩 상태를 표시할 스플래시 화면
 
-// import 'screens/signup_page.dart'; // 필요시
-
-void main() {
+void main() async {
+  // Flutter 엔진과 위젯 바인딩을 초기화합니다.
+  // main 함수에서 비동기 작업을 수행하기 위해 필수입니다.
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 앱을 세로 모드로 고정합니다.
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
-
-  // 에러 핸들링 추가
-  FlutterError.onError = (FlutterErrorDetails details) {
-    FlutterError.presentError(details);
-    print('Flutter 에러: ${details.exception}');
-  };
 
   runApp(const MyApp());
 }
@@ -33,21 +32,40 @@ class MyApp extends StatelessWidget {
       title: '칼로리 트래커',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // [참고] 로그인/회원가입 테마와 앱 내부 테마를 여기서 함께 관리하거나,
-        // 로그인 테마는 분홍색, 메인 앱 테마는 주황색으로 따로 관리할 수도 있습니다.
-        // 여기서는 기존 주황색 테마를 유지하겠습니다.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.orange),
         useMaterial3: true,
-        // fontFamily: 'NotoSans', // 폰트가 없으면 주석 처리
-        scaffoldBackgroundColor: Colors.white, // 기본 배경색 설정
-
-        // (선택) 여기에 이전에 만들었던 '귀염뽀짝' 테마(버튼, 텍스트필드)를
-        // 추가하면 로그인/회원가입 페이지에도 바로 적용됩니다!
+        scaffoldBackgroundColor: Colors.white,
+        appBarTheme: const AppBarTheme(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+        ),
       ),
-      // [핵심] 앱의 첫 화면을 MainScreen이 아닌 LoginPage로 변경합니다.
-      home: LoginPage(),
+      // [핵심] FutureBuilder를 사용하여 로그인 상태 확인 후 화면 결정
+      home: FutureBuilder<String?>(
+        // Secure Storage에서 'accessToken'을 읽어옵니다.
+        future: const FlutterSecureStorage().read(key: 'accessToken'),
+        builder: (context, snapshot) {
+          // 1. 로딩 중일 때 (토큰 확인 중)
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SplashScreen(); // 로딩 중에는 스플래시 화면을 보여줍니다.
+          }
+
+          // 2. 토큰이 있고, 비어있지 않을 때 (로그인 상태)
+          if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+            return const MainScreen(); // 메인 화면으로 이동
+          }
+
+          // 3. 토큰이 없거나, 에러가 발생했을 때 (비로그인 상태)
+          return const LoginScreen(); // 로그인 화면으로 이동
+        },
+      ),
+      // 명명된 라우트(Named Route) 정의
       routes: {
-        '/signup': (_) => const SignupPage(), // ✅ 회원가입 라우트
+        // '/login' 경로는 home에서 처리하므로 중복 정의하지 않습니다.
+        '/signup': (context) => const SignupScreen(),
+        '/main': (context) => const MainScreen(),
       },
     );
   }
