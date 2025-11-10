@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'restaurant_map_screen.dart'; // 지도 화면 import
 import 'main_screen.dart'; // MainScreen import
 import '../services/analysis_service.dart'; // YouTube 검색 서비스
+import '../util/auth_helper.dart';
 
 class ResultPage extends StatefulWidget {
   final Map<String, dynamic> food;
@@ -715,8 +716,9 @@ class _ResultPageState extends State<ResultPage> {
                                         final historyId = widget.food['historyId'] as String?;
                                         if (historyId != null && historyId.isNotEmpty) {
                                           try {
+                                            // 백엔드가 JWT에서 자동으로 userId를 추출하므로 userId를 전달하지 않음
                                             await AnalysisService().saveClickedYouTubeRecipe(
-                                              userId: 1, // TODO: 실제 로그인한 사용자 ID로 변경
+                                              userId: null, // 백엔드가 JWT에서 자동 추출
                                               historyId: historyId,
                                               title: title,
                                               url: url,
