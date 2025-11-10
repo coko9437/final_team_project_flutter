@@ -1,4 +1,4 @@
-// lib/main.dart
+// lib/main.dart 메인
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
