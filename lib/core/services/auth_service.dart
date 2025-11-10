@@ -1,4 +1,5 @@
 // lib/core/services/auth_service.dart
+// Dio 라이브러리를 사용하여 실제 서버와 통신하고, 인증(로그인/회원가입/로그아웃) 관련 데이터를 주고받는 역할
 
 import 'dart:convert';
 import 'package:dio/dio.dart';

@@ -1,4 +1,7 @@
 // lib/main.dart 메인
+  // 앱이 실행될 때 가장 먼저 호출
+  // 로그인 상태를 비동기적으로 확인하여 사용자에게
+  // LoginScreen 또는 MainScreen 중 어떤 화면을 먼저 보여줄지 결정
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';

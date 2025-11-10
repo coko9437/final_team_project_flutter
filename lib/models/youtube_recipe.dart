@@ -1,4 +1,5 @@
 // lib/models/youtube_recipe.dart
+// 유튜브 레시피 영상 정보 데이터 모델
 
 /// 유튜브 레시피 DTO
 class YoutubeRecipe {

@@ -1,5 +1,5 @@
 // lib/models/history_item.dart
-
+// 마이페이지의 분석 이력 목록에 표시될 각 항목의 데이터 모델
 import 'youtube_recipe.dart';
 
 /// 분석 이력 DTO

@@ -1,5 +1,6 @@
 // lib/core/controllers/auth_controller.dart
-
+// UI(화면)와 Service(통신 로직) 사이를 연결
+// UI에서 발생한 이벤트(버튼 클릭 등)를 받아 AuthService 호출 -> UI에 전달
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';

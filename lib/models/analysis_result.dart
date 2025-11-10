@@ -1,4 +1,5 @@
 // lib/models/analysis_result.dart
+// 이미지 분석 후 서버로부터 받는 최종 결과 데이터 모델
 
 import 'nutrition_data.dart';
 import 'youtube_recipe.dart';

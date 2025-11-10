@@ -1,5 +1,5 @@
 // lib/core/config/api_config.dart
-
+// 서버와의 통신, 데이터 처리, 외부 서비스 연동 등
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 

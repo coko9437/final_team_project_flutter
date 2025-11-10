@@ -1,5 +1,5 @@
 // lib/models/restaurant.dart
-
+// 지도 화면에서 사용될 식당 정보 데이터 모델
 /// 식당 정보 DTO
 class Restaurant {
   final String name;
