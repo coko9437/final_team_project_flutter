@@ -304,6 +304,8 @@ class _CapturePageState extends State<CapturePage>
                                 width: double.infinity,
                                 height: MediaQuery.of(context).size.height * 0.4, // 화면 높이의 40%
                                 fit: BoxFit.cover,
+                                cacheWidth: (MediaQuery.of(context).size.width * 2).toInt(),
+                                filterQuality: FilterQuality.medium,
                               )
                             : _videoController != null && _videoController!.value.isInitialized
                                 ? AspectRatio(

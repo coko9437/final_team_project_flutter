@@ -324,6 +324,8 @@ class _MyPageState extends State<MyPage> {
                         width: 120, // 고정 너비
                         height: 120, // 고정 높이 (정사각형)
                         fit: BoxFit.cover, // 비율 유지하며 채우기
+                        cacheWidth: 240, // 2배 해상도로 캐싱
+                        cacheHeight: 240,
                         headers: const {
                           'Accept': 'image/*',
                         },

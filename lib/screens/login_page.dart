@@ -22,8 +22,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    // 소셜 로그인 리다이렉트 리스너 시작
-    _c.startLinkListener(onSuccess: _onLoginSuccess);
+    // 소셜 로그인 리다이렉트 리스너 시작 (비동기로 실행하여 메인 스레드 블로킹 방지)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _c.startLinkListener(onSuccess: _onLoginSuccess);
+    });
   }
 
   @override

@@ -178,6 +178,7 @@ class _ResultPageState extends State<ResultPage> {
                                   );
                                 },
                                 cacheWidth: (MediaQuery.of(context).size.width * 2).toInt(),
+                                filterQuality: FilterQuality.medium,
                               )
                         : const Center(
                             child: Text(

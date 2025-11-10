@@ -9,9 +9,11 @@ import 'screens/signup_page.dart';
 
 // import 'screens/signup_page.dart'; // 필요시
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
+  
+  // 화면 방향 설정 (비동기로 처리하여 블로킹 방지)
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
   ]);
 
