@@ -4,26 +4,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:mime/mime.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/config/api_config.dart'; // 공통 설정 사용
 
+
 class AnalysisService {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
-
-  /// JWT 토큰을 헤더에 포함한 HTTP 헤더 생성
-  Future<Map<String, String>> _getAuthHeaders() async {
-    final headers = <String, String>{
-      'Content-Type': 'application/json',
-    };
-
-    // JWT 토큰 가져오기
-    final accessToken = await _storage.read(key: 'accessToken');
-    if (accessToken != null && accessToken.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $accessToken';
-    }
-
-    return headers;
-  }
   /// 공통 설정에서 base URL 가져오기
   static String get baseUrl {
     final url = ApiConfig.getApiUrl('/api/analysis');
@@ -353,7 +337,6 @@ class AnalysisService {
   }
 
   /// YouTube 레시피 클릭 시 저장
-  /// JWT 토큰에서 자동으로 사용자 ID를 추출합니다.
   Future<void> saveClickedYouTubeRecipe({
     required int userId,
     required String historyId,

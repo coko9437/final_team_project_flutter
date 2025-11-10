@@ -715,6 +715,7 @@ class _ResultPageState extends State<ResultPage> {
                                         if (historyId != null && historyId.isNotEmpty) {
                                           try {
                                             await AnalysisService().saveClickedYouTubeRecipe(
+                                              userId: 1, // TODO: 실제 로그인한 사용자 ID로 변경
                                               historyId: historyId,
                                               title: title,
                                               url: url,
