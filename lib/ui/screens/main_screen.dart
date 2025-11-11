@@ -2,10 +2,10 @@
 // 로그인 후 진입하는 메인 프레임
 
 import 'package:flutter/material.dart';
+import '../map/simple_map_screen.dart';
+import '../profile/profile_screen.dart';
 import '../widgets/bottom_nav.dart';
 import 'home/home_screen.dart';
-import 'map/simple_map_screen.dart';
-import 'profile/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
