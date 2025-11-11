@@ -22,8 +22,6 @@ class _NutritionPageState extends State<NutritionPage> {
   @override
   void initState() {
     super.initState();
-    // 기본적으로는 빈 리스트로 시작 (검색 전까지는 데이터 로드 안 함)
-    // _loadFoodList(); // 주석 처리 - 검색 시에만 데이터 로드
   }
 
   @override
@@ -91,9 +89,8 @@ class _NutritionPageState extends State<NutritionPage> {
       ));
 
       // 백엔드 검색: 클라이언트 측에서 필터링
-      // 전체 목록을 가져온 후 검색어로 필터링
       final response = await dio.get('/api/admin/food-references');
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final allFoods = response.data is List ? response.data : [];
         // 클라이언트 측에서 검색어로 필터링
@@ -101,12 +98,12 @@ class _NutritionPageState extends State<NutritionPage> {
           final name = (food['foodName'] ?? food['name'] ?? '').toString().toLowerCase();
           return name.contains(query.toLowerCase());
         }).toList();
-        
+
         // 검색 결과가 있으면 첫 번째 결과를 선택된 음식으로 설정
         if (filtered.isNotEmpty) {
           final firstFood = filtered.first;
           final nutrition = firstFood['nutritionData'] ?? firstFood['nutritionInfo'] ?? firstFood['nutrition'] ?? {};
-          
+
           setState(() {
             _foodList = filtered;
             _selectedFoodName = firstFood['foodName'] ?? firstFood['name'] ?? query;
@@ -140,139 +137,145 @@ class _NutritionPageState extends State<NutritionPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 화면 높이를 가져와 검색 결과 목록의 높이를 제한하는 데 사용
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('영양소 정보'),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
-        children: [
-          // 검색 바
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '음식 이름을 검색하세요 (예: 양념치킨)',
-                prefixIcon: const Icon(Icons.search),
-                        suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _foodList = [];
-                            _selectedFoodName = null;
-                            _selectedNutrition = null;
-                            _errorMessage = null;
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+      // 🚨 [수정] 최상위 Column을 SingleChildScrollView로 감싸서 오버플로우 방지
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // 🚨 [추가] Column의 크기를 최소화
+          children: [
+            // 검색 바
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: '음식 이름을 검색하세요 (예: 양념치킨)',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _foodList = [];
+                        _selectedFoodName = null;
+                        _selectedNutrition = null;
+                        _errorMessage = null;
+                      });
+                    },
+                  )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[100],
                 ),
-                filled: true,
-                fillColor: Colors.grey[100],
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    _searchFood(value);
+                  } else {
+                    setState(() {
+                      _foodList = [];
+                      _selectedFoodName = null;
+                      _selectedNutrition = null;
+                      _errorMessage = null;
+                    });
+                  }
+                },
+                onChanged: (value) {
+                  setState(() {});
+                },
               ),
-              onSubmitted: (value) {
-                if (value.trim().isNotEmpty) {
-                  _searchFood(value);
-                } else {
-                  // 검색어가 비어있으면 선택된 정보 초기화
-                  setState(() {
-                    _foodList = [];
-                    _selectedFoodName = null;
-                    _selectedNutrition = null;
-                    _errorMessage = null;
-                  });
-                }
-              },
-              onChanged: (value) {
-                setState(() {});
-                // 실시간 검색 (선택사항) - 필요하면 주석 해제
-                // if (value.trim().isNotEmpty) {
-                //   _searchFood(value);
-                // } else {
-                //   setState(() {
-                //     _foodList = [];
-                //   });
-                // }
-              },
             ),
-          ),
-          // 영양소 정보 표시 영역
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+            // 영양소 정보 표시 영역
+            // 🚨 [수정] Expanded 제거
+            _isLoading
+                ? const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 50.0),
+                child: CircularProgressIndicator(),
+              ),
+            )
                 : _errorMessage != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            Text(
-                              _errorMessage!,
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Column(
-                        children: [
-                          // 영양소 정보 카드 (항상 표시)
-                          Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: _NutritionInfoCard(
-                              foodName: _selectedFoodName,
-                              nutrition: _selectedNutrition,
-                            ),
+                ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            )
+                : Column(
+              mainAxisSize: MainAxisSize.min, // 🚨 [추가] Column의 크기를 최소화
+              children: [
+                // 영양소 정보 카드 (항상 표시)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _NutritionInfoCard(
+                    foodName: _selectedFoodName,
+                    nutrition: _selectedNutrition,
+                  ),
+                ),
+                // 검색 결과 목록 (1개 이상일 때 표시)
+                if (_foodList.length > 0) // 🚨 [수정] 0개 초과로 변경
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                        child: Text(
+                          '검색 결과 (${_foodList.length}개)',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                          // 검색 결과 목록 (여러 결과가 있을 때만 표시)
-                          if (_foodList.length > 1)
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                                    child: Text(
-                                      '검색 결과 (${_foodList.length}개)',
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: ListView.builder(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                                      itemCount: _foodList.length,
-                                      itemBuilder: (context, index) {
-                                        final food = _foodList[index];
-                                        return _FoodListItem(
-                                          food: food,
-                                          onTap: () {
-                                            // 리스트 아이템 클릭 시 해당 음식 정보 표시
-                                            final nutrition = food['nutritionData'] ?? food['nutritionInfo'] ?? food['nutrition'] ?? {};
-                                            setState(() {
-                                              _selectedFoodName = food['foodName'] ?? food['name'] ?? '알 수 없음';
-                                              _selectedNutrition = nutrition;
-                                            });
-                                          },
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                        ],
+                        ),
                       ),
-          ),
-        ],
+                      // 🚨 [수정] Expanded를 제거하고 SizedBox로 높이를 제한
+                      SizedBox(
+                        height: screenHeight * 0.4, // 화면 높이의 40%로 제한
+                        child: ListView.builder(
+                          shrinkWrap: true, // 🚨 [추가]
+                          physics: const AlwaysScrollableScrollPhysics(), // 🚨 [추가]
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: _foodList.length,
+                          itemBuilder: (context, index) {
+                            final food = _foodList[index];
+                            return _FoodListItem(
+                              food: food,
+                              onTap: () {
+                                // 리스트 아이템 클릭 시 해당 음식 정보 표시
+                                final nutrition = food['nutritionData'] ?? food['nutritionInfo'] ?? food['nutrition'] ?? {};
+                                setState(() {
+                                  _selectedFoodName = food['foodName'] ?? food['name'] ?? '알 수 없음';
+                                  _selectedNutrition = nutrition;
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 20), // 하단 여백 추가
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -339,7 +342,6 @@ class _NutritionInfoCard extends StatelessWidget {
               ),
             const SizedBox(height: 32),
             // 영양소 정보 그리드 (2x2 대각선 4등분)
-            // 고정 높이로 설정하여 Expanded 문제 해결
             SizedBox(
               height: 300,
               child: Column(
@@ -423,7 +425,7 @@ class _FoodListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final foodName = food['foodName'] ?? food['name'] ?? '알 수 없음';
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: 1,
@@ -490,4 +492,3 @@ class _NutritionItem extends StatelessWidget {
     );
   }
 }
-

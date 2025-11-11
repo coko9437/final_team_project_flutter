@@ -286,13 +286,8 @@ class MyPageState extends State<MyPage> {
                             // 사용자 이름/ID 텍스트
                             Expanded(
                               child: Text(
-                                _isOAuthUser && _oauthProviders.isNotEmpty
-                                    ? _oauthProviders.map((p) {
-                                        if (p == 'google') return '구글';
-                                        if (p == 'naver') return '네이버';
-                                        return p;
-                                      }).join(', ')
-                                    : (_displayUserId ?? '사용자'),
+                                // 소셜 로그인 여부와 관계없이 _displayUserId를 사용하도록 수정
+                                _displayUserId ?? '사용자',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
